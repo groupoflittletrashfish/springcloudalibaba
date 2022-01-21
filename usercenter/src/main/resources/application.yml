@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        #指定nacos服务的地址，不需要加入前缀http等信息
+        server-addr: localhost:8848
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_center?useSSL=false&serverTimezone=UTC
+    hikari:
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+  application:
+    #服务名称需要指定，但尽量使用-，不要使用_
+    name: user-center
