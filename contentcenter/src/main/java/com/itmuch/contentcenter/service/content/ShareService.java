@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -48,8 +50,8 @@ public class ShareService {
         RestTemplate restTemplate = new RestTemplate();
         // 用HTTP GET方法去请求，并且返回一个对象
         ResponseEntity<String> forEntity = restTemplate.getForEntity(
-            "http://localhost:8080/users/{id}",
-            String.class, 2
+                "http://localhost:8080/users/{id}",
+                String.class, 2
         );
 
         System.out.println(forEntity.getBody());
@@ -61,48 +63,29 @@ public class ShareService {
 
     public Share auditById(Integer id, ShareAuditDTO auditDTO) {
         // 1. 查询share是否存在，不存在或者当前的audit_status != NOT_YET，那么抛异常
-//        Share share = this.shareMapper.selectByPrimaryKey(id);
-//        if (share == null) {
-//            throw new IllegalArgumentException("参数非法！该分享不存在！");
-//        }
-//        if (!Objects.equals("NOT_YET", share.getAuditStatus())) {
-//            throw new IllegalArgumentException("参数非法！该分享已审核通过或审核不通过！");
-//        }
-//
-//        // 3. 如果是PASS，那么发送消息给rocketmq，让用户中心去消费，并为发布人添加积分
-//        if (AuditStatusEnum.PASS.equals(auditDTO.getAuditStatusEnum())) {
-//            // 发送半消息。。
-//            String transactionId = UUID.randomUUID().toString();
-//
-//            this.source.output()
-//                .send(
-//                    MessageBuilder
-//                        .withPayload(
-//                            UserAddBonusMsgDTO.builder()
-//                                .userId(share.getUserId())
-//                                .bonus(50)
-//                                .build()
-//                        )
-//                        // header也有妙用...
-//                        .setHeader(RocketMQHeaders.TRANSACTION_ID, transactionId)
-//                        .setHeader("share_id", id)
-//                        .setHeader("dto", JSON.toJSONString(auditDTO))
-//                        .build()
-//                );
-//        }
-//        else {
-//            this.auditByIdInDB(id, auditDTO);
-//        }
+        Share share = this.shareMapper.selectByPrimaryKey(id);
+        if (share == null) {
+            throw new IllegalArgumentException("参数非法！该分享不存在！");
+        }
+        if (!Objects.equals("NOT_YET", share.getAuditStatus())) {
+            throw new IllegalArgumentException("参数非法！该分享已审核通过或审核不通过！");
+        }
+        // 2. 审核资源，将状态设为PASS/REJECT
+        share.setAuditStatus(auditDTO.getAuditStatusEnum().toString());
+        this.shareMapper.updateByPrimaryKey(share);
+
+        //如果是PASS，那么为发布人添加积分
+        //加积分的操作可以作为异步，因为本身并不是审核的主要业务
         return null;
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void auditByIdInDB(Integer id, ShareAuditDTO auditDTO) {
         Share share = Share.builder()
-            .id(id)
-            .auditStatus(auditDTO.getAuditStatusEnum().toString())
-            .reason(auditDTO.getReason())
-            .build();
+                .id(id)
+                .auditStatus(auditDTO.getAuditStatusEnum().toString())
+                .reason(auditDTO.getReason())
+                .build();
         this.shareMapper.updateByPrimaryKeySelective(share);
 
         // 4. 把share写到缓存
