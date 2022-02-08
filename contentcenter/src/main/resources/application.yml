@@ -12,43 +12,49 @@ spring:
   cloud:
     nacos:
       discovery:
-        # Ö¸¶¨nacos serverµÄµØÖ·
+        # æŒ‡å®šnacos serverçš„åœ°å€
         server-addr: localhost:8848
     sentinel:
       filter:
-        # ´ò¿ª/¹Ø±Õµô¶ÔSpring MVC¶ËµãµÄ±£»¤
+        # æ‰“å¼€/å…³é—­æ‰å¯¹Spring MVCç«¯ç‚¹çš„ä¿æŠ¤
         enabled: true
         url-patterns: /**
       transport:
-        # Ö¸¶¨sentinel ¿ØÖÆÌ¨µÄµØÖ·
+        # æŒ‡å®šsentinel æ§åˆ¶å°çš„åœ°å€
         dashboard: localhost:8012
   application:
-    # ·şÎñÃû³Æ¾¡Á¿ÓÃ-£¬²»ÒªÓÃ_£¬²»ÒªÓÃÌØÊâ×Ö·û
+    # æœåŠ¡åç§°å°½é‡ç”¨-ï¼Œä¸è¦ç”¨_ï¼Œä¸è¦ç”¨ç‰¹æ®Šå­—ç¬¦
     name: content-center
 feign:
   sentinel:
-    # ÎªfeignÕûºÏsentinel
+    # ä¸ºfeignæ•´åˆsentinel
     enabled: true
   client:
     config:
-      # È«¾ÖÅäÖÃ
+      # å…¨å±€é…ç½®
       default:
         loggerLevel: full
         requestInterceptors:
           - com.itmuch.contentcenter.feignclient.interceptor.TokenRelayRequestIntecepor
   httpclient:
-    # ÈÃfeignÊ¹ÓÃapache httpclient×öÇëÇó£»¶ø²»ÊÇÄ¬ÈÏµÄurlconnection
+    # è®©feignä½¿ç”¨apache httpclientåšè¯·æ±‚ï¼›è€Œä¸æ˜¯é»˜è®¤çš„urlconnection
     enabled: true
-    # feignµÄ×î´óÁ¬½ÓÊı
+    # feignçš„æœ€å¤§è¿æ¥æ•°
     max-connections: 200
-    # feignµ¥¸öÂ·¾¶µÄ×î´óÁ¬½ÓÊı
+    # feignå•ä¸ªè·¯å¾„çš„æœ€å¤§è¿æ¥æ•°
     max-connections-per-route: 50
 resttemplate:
   sentinel:
-    # ÉèÖÃ³Éfalse£¬±íÊ¾¹Ø±Õ@SentinelRestTemplate×¢½â
+    # è®¾ç½®æˆfalseï¼Œè¡¨ç¤ºå…³é—­@SentinelRestTemplateæ³¨è§£
     enabled: true
 management:
   endpoints:
     web:
       exposure:
         include: '*'
+rocketmq:
+  # å¯åŠ¨çš„name-serverçš„æœåŠ¡åœ°å€
+  name-server: 127.0.0.1:9876
+  producer:
+    # å¿…é¡»æŒ‡å®šGroup
+    group: test-group

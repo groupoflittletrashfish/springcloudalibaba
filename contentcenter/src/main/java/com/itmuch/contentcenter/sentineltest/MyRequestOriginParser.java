@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 这个代码的意思是检查请求的参数中是否存在origin这个参数，如果没有则报错。当然在实际的开发中可以放入请求头中。
  * 那么在后续的请求中这个origin的值将会代码它的来源
+ *
+ * 由于要在后续的请求中继续测试其他的功能，所以此处把@Component去除了
  * @author ：liwuming
  * @date ：Created in 2022/1/21 11:32
  * @description ：
@@ -16,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
  * @version:
  */
 
-@Component
+//@Component
 public class MyRequestOriginParser implements RequestOriginParser {
     @Override
     public String parseOrigin(HttpServletRequest httpServletRequest) {

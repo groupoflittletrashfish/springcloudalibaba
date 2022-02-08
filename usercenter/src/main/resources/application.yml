@@ -1,8 +1,9 @@
+
 spring:
   cloud:
     nacos:
       discovery:
-        #Ö¸¶¨nacos·şÎñµÄµØÖ·£¬²»ĞèÒª¼ÓÈëÇ°×ºhttpµÈĞÅÏ¢
+        #æŒ‡å®šnacosæœåŠ¡çš„åœ°å€ï¼Œä¸éœ€è¦åŠ å…¥å‰ç¼€httpç­‰ä¿¡æ¯
         server-addr: localhost:8848
   datasource:
     url: jdbc:mysql://localhost:3306/user_center?useSSL=false&serverTimezone=UTC
@@ -11,5 +12,7 @@ spring:
       password: root
       driver-class-name: com.mysql.cj.jdbc.Driver
   application:
-    #·şÎñÃû³ÆĞèÒªÖ¸¶¨£¬µ«¾¡Á¿Ê¹ÓÃ-£¬²»ÒªÊ¹ÓÃ_
+    #æœåŠ¡åç§°éœ€è¦æŒ‡å®šï¼Œä½†å°½é‡ä½¿ç”¨-ï¼Œä¸è¦ä½¿ç”¨_
     name: user-center
+rocketmq:
+  name-server: 127.0.0.1:9876
