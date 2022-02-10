@@ -1,6 +1,21 @@
 
 spring:
   cloud:
+    stream:
+      rocketmq:
+        binder:
+          name-server: 127.0.0.1:9876
+      bindings:
+        #input就是指消费来源
+        input:
+          #topic名称
+          destination: add-bonus
+          #RocketMQ一定要设置，但是随意即可，如果是别的MQ则不需要
+          group: binder-group
+        #这个名字要与自定义的常量名称相同才可以
+        my-input:
+          destination: stream-test-topic
+          group: my-group
     nacos:
       discovery:
         #指定nacos服务的地址，不需要加入前缀http等信息

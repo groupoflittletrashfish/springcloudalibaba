@@ -1,5 +1,6 @@
 package com.itmuch.contentcenter.service.content;
 
+import com.alibaba.fastjson.JSON;
 import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.dao.messaging.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDTO;
@@ -16,6 +17,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class ShareService {
     private final UserCenterFeignClient userCenterFeignClient;
     private final RocketMQTemplate rocketMQTemplate;
     private final RocketmqTransactionLogMapper rocketmqTransactionLogMapper;
+    private final Source source;
 //    private final RocketmqTransactionLogMapper rocketmqTransactionLogMapper;
 
     public ShareDTO findById(Integer id) {
@@ -82,10 +85,17 @@ public class ShareService {
         //如果是PASS，那么为发布人添加积分，这一块是核心代码
         if (AuditStatusEnum.PASS.equals(auditDTO.getAuditStatusEnum())) {
             //发送一个事务消息，第一个参数就是topic,第二个参数是消息对象，它可以通过MessageBuilder来构建，同时也可以写入一些自定义的头部信息，最后一个参数是arg,即参数，就是传参用的
-            this.rocketMQTemplate.sendMessageInTransaction(
-                    "add-bonus",
-                    MessageBuilder.withPayload(UserAddBonusMsgDTO.builder().userId(share.getUserId()).bonus(50).build()).setHeader(RocketMQHeaders.TRANSACTION_ID, UUID.randomUUID()).setHeader("share_id", id).build(),
-                    auditDTO);
+//            this.rocketMQTemplate.sendMessageInTransaction("mygroup",
+//                    "add-bonus",
+//                    MessageBuilder.withPayload(UserAddBonusMsgDTO.builder().userId(share.getUserId()).bonus(50).build()).setHeader(RocketMQHeaders.TRANSACTION_ID, UUID.randomUUID()).setHeader("share_id", id).build(),
+//                    auditDTO);
+
+            //使用stream来发送MQ消息,如果要传递参数的话可以将参数都放在Header里面一起传递
+            this.source.output().send(MessageBuilder.withPayload(UserAddBonusMsgDTO.builder().userId(share.getUserId()).bonus(50).build())
+                    .setHeader(RocketMQHeaders.TRANSACTION_ID, UUID.randomUUID())
+                    .setHeader("share_id", id)
+                    .setHeader("dto", JSON.toJSONString(auditDTO))
+                    .build());
         } else {
             this.auditById(id, auditDTO);
         }

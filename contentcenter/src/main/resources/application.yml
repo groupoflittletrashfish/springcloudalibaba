@@ -1,15 +1,26 @@
 server:
   port: 8010
 spring:
-  main:
-    allow-bean-definition-overriding: true
-  datasource:
-    url: jdbc:mysql://localhost:3306/content_center?&useSSL=false&serverTimezone=UTC
-    hikari:
-      username: root
-      password: root
-      driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
+    stream:
+      rocketmq:
+        binder:
+          #RocketMQ的name-server地址
+          name-server: 127.0.0.1:9876
+        #这一段是事务性消息的部分
+        bindings:
+          output:
+            producer:
+              #是否是事务性消息
+              transactional: true
+              #这个值就是本地监听器@RocketMQTransactionListener(txProducerGroup = "mygroup")对应的值
+              group: mygroup
+        #这一段是事务性消息的部分
+      bindings:
+        #output其实指的就是目标MQ，即发送消息到哪里
+        output:
+          # 指定topic
+          destination: add-bonus
     nacos:
       discovery:
         # 指定nacos server的地址
@@ -25,6 +36,14 @@ spring:
   application:
     # 服务名称尽量用-，不要用_，不要用特殊字符
     name: content-center
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/content_center?&useSSL=false&serverTimezone=UTC
+    hikari:
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
 feign:
   sentinel:
     # 为feign整合sentinel

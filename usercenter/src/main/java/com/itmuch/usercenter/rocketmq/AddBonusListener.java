@@ -24,7 +24,7 @@ import java.util.Date;
  * @version:
  */
 
-@Service
+//@Service
 @RocketMQMessageListener(consumerGroup = "consumer-group", topic = "add-bonus")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AddBonusListener implements RocketMQListener<UserAddBonusMsgDTO> {

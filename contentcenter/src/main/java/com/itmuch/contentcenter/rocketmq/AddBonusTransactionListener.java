@@ -1,5 +1,6 @@
 package com.itmuch.contentcenter.rocketmq;
 
+import com.alibaba.fastjson.JSON;
 import com.itmuch.contentcenter.dao.messaging.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDTO;
 import com.itmuch.contentcenter.domain.entity.messaging.RocketmqTransactionLog;
@@ -24,7 +25,7 @@ import java.util.Objects;
  * @modified By：
  * @version:
  */
-@RocketMQTransactionListener
+@RocketMQTransactionListener(txProducerGroup = "mygroup")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AddBonusTransactionListener implements RocketMQLocalTransactionListener {
 
@@ -35,6 +36,7 @@ public class AddBonusTransactionListener implements RocketMQLocalTransactionList
 
     /**
      * 这个函数的主要作用是操作本地的事务，如果本地事务成功则提交，反之回滚
+     *
      * @param message
      * @param arg
      * @return
@@ -47,9 +49,12 @@ public class AddBonusTransactionListener implements RocketMQLocalTransactionList
         String transactionId = (String) headers.get(RocketMQHeaders.TRANSACTION_ID);
         Integer shareId = Integer.valueOf((String) Objects.requireNonNull(headers.get("share_id")));
 
+        String dtoString = (String)headers.get("dto");
+        ShareAuditDTO auditDTO = JSON.parseObject(dtoString, ShareAuditDTO.class);
+
         try {
             //这个也是业务逻辑，代码就不贴出来了，就是将 用户的积分添加日志插入到数据库
-            this.shareService.auditByIdWithRocketMqLog(shareId, (ShareAuditDTO) arg, transactionId);
+            this.shareService.auditByIdWithRocketMqLog(shareId, auditDTO, transactionId);
             //如果成功则提交
             return RocketMQLocalTransactionState.COMMIT;
         } catch (Exception e) {
@@ -60,6 +65,7 @@ public class AddBonusTransactionListener implements RocketMQLocalTransactionList
 
     /**
      * 这个函数是一个回查，即在一些特殊情况下，那么可以根据自定义的需求来进行表的回查，通俗来讲就是有一些未知原因的消息，不确实是提交还是回滚，那么通过回查函数来确定
+     *
      * @param message
      * @return
      */
